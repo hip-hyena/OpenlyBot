@@ -166,6 +166,7 @@ Locales.en = {
   'btn_about': 'About',
   'btn_couple': 'Couple',
 
+  'btn_save': 'Save',
   'btn_menu': '⏪ Menu',
   'btn_prevpage': '◀ Previous',
   'btn_nextpage': 'Next ▶',
@@ -472,6 +473,7 @@ Locales.ru = {
   'btn_fillprofile': 'Заполнить анкету 📝',
   'btn_editprofile': 'Изменить анкету 📝',
   'btn_settings': 'Настройки ⚙️',
+  'btn_save': 'Сохранить',
 
   'btn_langs': 'Язык 💬',
   'btn_filter_genders': 'Фильтр поиска 🔎',

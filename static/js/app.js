@@ -116,6 +116,19 @@ Vue.component('a-profile', {
   },
 });
 
+const ProfileFields = [
+  ['name', 10],
+  ['birthdate', 20],
+  ['interests', 30],
+  ['city', 40],
+  ['display_gender', 50],
+  ['pronouns', 60],
+  ['sexuality', 70],
+  ['height', 80],
+  ['weight', 90],
+  ['about', 120]
+];
+
 var app = new Vue({
   el: '#app',
   data: {
@@ -127,9 +140,23 @@ var app = new Vue({
     feed: [],
     notifications: [],
 
+    editedValue: '',
+
     isCouple: false,
     isLocalSearch: false,
     isProfileDirty: false,
+  },
+  watch: {
+    editedValue(newValue) {
+      const field = this.page;
+      const origValue = this.me[field];
+      if (origValue == newValue) {
+        Telegram.WebApp.MainButton.hide();
+      } else {
+        Telegram.WebApp.MainButton.text = this.$str.btn_save;
+        Telegram.WebApp.MainButton.show();
+      }
+    },
   },
   methods: {
     async api(endpoint, params = {}) {
@@ -170,6 +197,10 @@ var app = new Vue({
         Telegram.WebApp.MainButton.hide();
       }
 
+      if (ProfileFields.map(([name]) => name).includes(newPage)) {
+        this.editedValue = this.me[newPage] || '';
+      }
+
       if (this.prev.length) {
         Telegram.WebApp.BackButton.show();
       } else {
@@ -188,6 +219,10 @@ var app = new Vue({
     },
     async onboardingPage(page, value, skipHistory) {
       await this.update({ onboarding_step: value });
+      this.turnPage(page, skipHistory);
+    },
+    async profilePage(page, value, skipHistory) {
+      await this.update({ profile_step: value });
       this.turnPage(page, skipHistory);
     },
     async selectGender(gender) {
@@ -220,6 +255,17 @@ var app = new Vue({
       } else
       if (this.page == 'lookingfor') {
         this.onboardingPage('home', 120);
+      }
+      for (let i = 0; i < ProfileFields.length; i++) {
+        const [name, step] = ProfileFields[i];
+        if (this.page == name) {
+          await this.update({ [name]: this.editedValue });
+          if (this.me.profile_step < 120) {
+            this.profilePage(i < ProfileFields.length - 1 ? ProfileFields[i + 1][0] : 'home', step);
+          } else {
+            this.popPage();
+          }
+        }
       }
     },
     async onSelectPhoto(ev) {
@@ -278,6 +324,15 @@ var app = new Vue({
     activateNotification(notif) {
       Telegram.WebApp.openTelegramLink(`https://t.me/${notif.user.username}`);
     },
+    editProfile() {
+      for (let [name, step] of ProfileFields) {
+        if (this.me.profile_step < step) {
+          this.turnPage(name);
+          return;
+        }
+      }
+      this.turnPage('profile');
+    },
     async showMatches() {
       this.feed = (await this.api('matches', { local: false })).feed;
       this.turnPage('matches');
@@ -303,7 +358,19 @@ var app = new Vue({
       });
     },
     getAge(dob) {
-
+      const [day, month, year] = dob.split('.').map(v => parseInt(v, 10));
+      const now = new Date();
+      let age = now.getFullYear() - year;
+      if (now.getMonth() + 1 < month) {
+        return age - 1;
+      }
+      if (now.getMonth() + 1 > month) {
+        return age;
+      }
+      if (now.getDate() < day) {
+        return age - 1;
+      }
+      return age;
     },
   },
   async mounted() {

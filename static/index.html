@@ -10,7 +10,7 @@
   <style> [v-cloak]{ display: none } </style>
   <link href="css/main.css" rel="stylesheet" media="screen">
 <body>
-  <div id="app">
+  <div id="app" v-cloak>
     <section v-if="page == 'agreement'">
       <p v-html="$str.msg_welcome.replaceAll(/\n/g, '<br/>')"></p>
     </section>
@@ -19,21 +19,91 @@
       <label><input type="checkbox" v-model="isCouple"/> {{ $str.gender_couple }}</label>
       <div class="buttons">
         <button v-for="genderId in [1, 2, 3, 4, 5]" @click="selectGender(genderId)">{{ $str['gender:' + genderId] }}</button>
-        <div class="link-button" @click="onboardingPage('lookingfor', 60)">{{ $str.btn_skip }}</div>
+        <div class="link-button" v-if="me.onboarding_step < 120" @click="onboardingPage('lookingfor', 60)">{{ $str.btn_skip }}</div>
       </div>
     </section>
     <section v-if="page == 'lookingfor'">
       <p v-html="$str.msg_lookingfor.replaceAll(/\n/g, '<br/>')"></p>
       <div class="buttons">
         <button v-for="lookingForId in [1, 2, 3, 4, 5, 6]" @click="selectLookingFor(lookingForId)">{{ $str['lookingfor:' + lookingForId] }}</button>
-        <div class="link-button" @click="onboardingPage('photo', 110)">{{ $str.btn_skip }}</div>
+        <div class="link-button" v-if="me.onboarding_step < 120" @click="onboardingPage('photo', 110)">{{ $str.btn_skip }}</div>
       </div>
     </section>
     <section v-if="page == 'photo'">
       <p v-html="$str.msg_photo.replaceAll(/\n/g, '<br/>')"></p>
       <div class="buttons">
         <button @click="$refs.photo.click()">Upload photo...</button>
-        <div class="link-button" @click="onboardingPage('home', 120)">{{ $str.btn_skip }}</div>
+        <div class="link-button" v-if="me.onboarding_step < 120" @click="onboardingPage('home', 120)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'name'">
+      <p v-html="$str.msg_profile_name.replaceAll(/\n/g, '<br/>').replaceAll(/%name%/g, me.first_name)"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('birthdate', 10)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'birthdate'">
+      <p v-html="$str.msg_profile_birthdate.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('interests', 20)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'interests'">
+      <p v-html="$str.msg_profile_interests.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('city', 30)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'city'">
+      <p v-html="$str.msg_profile_city.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('display_gender', 40)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'display_gender'">
+      <p v-html="$str.msg_profile_displaygender.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('pronouns', 50)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'pronouns'">
+      <p v-html="$str.msg_profile_pronouns.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('sexuality', 60)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'sexuality'">
+      <p v-html="$str.msg_profile_sexuality.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('height', 70)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'height'">
+      <p v-html="$str.msg_profile_height.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('weight', 80)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'weight'">
+      <p v-html="$str.msg_profile_weight.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <input type="text" v-model="editedValue"/>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('about', 90)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'about'">
+      <p v-html="$str.msg_profile_about.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <textarea v-model="editedValue"></textarea>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('home', 120)">{{ $str.btn_skip }}</div>
       </div>
     </section>
     <section v-if="page == 'home'">
@@ -41,7 +111,7 @@
       <div class="buttons">
         <button @click="search(true)">{{ $str.btn_local }}</button>
         <button @click="search(false)">{{ $str.btn_global }}</button>
-        <button @click="turnPage('profile')">{{ $str.btn_fillprofile }}</button>
+        <button @click="editProfile()">{{ me.profile_step < 120 ? $str.btn_fillprofile : $str.btn_editprofile }}</button>
         <button @click="showMatches()">{{ $str.btn_matches }}</button>
         <button @click="turnPage('settings')">{{ $str.btn_settings }}</button>
       </div>
@@ -58,17 +128,17 @@
           </div>
         </div>
         <div class="profile__row">
-          {{ $str[`gender:${me.gender}:emoji`] }} <span class="profile__field is-name" @click="turnPage('name')">{{ me.name || me.first_name }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.birthdate }">{{ me.birthdate ? getAge(me.birthdate) : 'enter birthdate...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.has_partner }">{{ me.has_partner ? 'couple' : 'add partner...' }}</span>
+          {{ $str[`gender:${me.gender}:emoji`] }} <b><span class="profile__field is-name" @click="turnPage('name')">{{ me.name || me.first_name }}</span></b>, <span class="profile__field" @click="turnPage('birthdate')" :class="{ 'is-empty': !me.birthdate }">{{ me.birthdate ? getAge(me.birthdate) : 'enter birthdate...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.has_partner }">{{ me.has_partner ? 'couple' : 'add partner...' }}</span>
         </div>
         <div class="profile__row">
-          <span class="profile__field" @click="turnPage('gender')">{{ $str[`gender:${me.gender}`] }}</span> <span class="profile__field" :class="{ 'is-empty': !me.pronouns }">({{ me.pronouns ? me.pronouns : 'add pronouns...' }})</span>, <span class="profile__field" :class="{ 'is-empty': !me.sexuality }">{{ me.sexuality ? me.sexuality : 'add sexuality...' }}</span>
+          <span class="profile__field" @click="turnPage('gender')">{{ $str[`gender:${me.gender}`] }}</span> <span class="profile__field" :class="{ 'is-empty': !me.pronouns }" @click="turnPage('pronouns')">({{ me.pronouns ? me.pronouns : 'add pronouns...' }})</span>, <span class="profile__field" :class="{ 'is-empty': !me.sexuality }" @click="turnPage('sexuality')">{{ me.sexuality ? me.sexuality : 'add sexuality...' }}</span>
         </div>
         <div class="profile__row">
-          <span class="profile__field" :class="{ 'is-empty': !me.city }">{{ me.city ? me.city : 'Add city...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.height }">{{ me.height ? $str.profile_height.replace(/%height%/g, me.height) : 'add height...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.weight }">{{ me.weight ? $str.profile_height.replace(/%weight%/g, me.weight) : 'add weight...' }}</span>
+          <span class="profile__field" :class="{ 'is-empty': !me.city }" @click="turnPage('city')">{{ me.city ? me.city : 'Add city...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.height }" @click="turnPage('height')">{{ me.height ? $str.profile_height.replace(/%height%/g, me.height) : 'add height...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.weight }" @click="turnPage('weight')">{{ me.weight ? $str.profile_weight.replace(/%weight%/g, me.weight) : 'add weight...' }}</span>
         </div>
-        <textarea class="profile__row is-about" placeholder="Enter about text..."></textarea>
+        <div class="profile__row is-about" @click="turnPage('about')">{{ me.about || 'Enter about text...' }}</div>
         <div class="profile__row">
-          <div class="profile__field" :class="{ 'is-empty': !me.interests }">{{ me.interests ? me.interests : 'Add interests...' }}</div>
+          <div class="profile__field" :class="{ 'is-empty': !me.interests }" @click="turnPage('interests')">{{ me.interests ? me.interests : 'Add interests...' }}</div>
         </div>
       </div>
     </section>
@@ -123,15 +193,15 @@
         <div class="profile__button is-like" v-if="!matches" @click="performAction('like')"></div>
       </div>
       <div class="profile__row">
-        {{ $str[`gender:${user.gender}:emoji`] }} <span class="is-name">{{ user.name || user.first_name }}</span><span v-if="user.birthdate">, {{ getAge(user.birthdate) }}</span><span v-if="user.has_partner">, {{ $str.couple }}</span>
+        {{ $str[`gender:${user.gender}:emoji`] }} <b><span class="is-name">{{ user.name || user.first_name }}</span></b><span v-if="user.birthdate">, {{ getAge(user.birthdate) }}</span><span v-if="user.has_partner">, {{ $str.couple }}</span>
       </div>
       <div class="profile__row">
         <span>{{ $str[`gender:${user.gender}`] }}</span><span v-if="user.pronouns"> ({{ me.pronouns }})</span><span v-if="user.sexuality">, {{ user.sexuality }}</span>
       </div>
       <div class="profile__row" v-if="user.city">
-        <span>{{ user.city }}</span><span v-if="user.height">, {{ $str.profile_height.replace(/%height%/g, me.height) }}</span><span v-if="user.weight">, {{ $str.profile_height.replace(/%weight%/g, me.weight) }}</span>
+        <span>{{ user.city }}</span><span v-if="user.height">, {{ $str.profile_height.replace(/%height%/g, user.height) }}</span><span v-if="user.weight">, {{ $str.profile_weight.replace(/%weight%/g, user.weight) }}</span>
       </div>
-      <div class="profile__row is-about">{{ user.about }}</div>
+      <div class="profile__row is-about" v-if="user.about">{{ user.about }}</div>
       <div class="profile__row" v-if="user.interests">
         {{ user.interests }}
       </div>

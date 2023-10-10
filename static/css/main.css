@@ -163,6 +163,13 @@ body.is-dark .profile.is-other {
   border: none;
   border-radius: 6px;
 }
+.profile.is-other .profile__row.is-about {
+  background: var(--tg-theme-bg-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-style: italic;
+  margin-top: 8px;
+}
 
 .profile__photo-dots {
   position: absolute;
