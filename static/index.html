@@ -61,7 +61,7 @@
       <p v-html="$str.msg_profile_city.replaceAll(/\n/g, '<br/>')"></p>
       <div class="buttons">
         <input type="text" v-model="editedValue"/>
-        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('display_gender', 40)">{{ $str.btn_skip }}</div>
+        <div class="link-button" v-if="me.profile_step < 120" @click="profilePage('pronouns', 50)">{{ $str.btn_skip }}</div>
       </div>
     </section>
     <section v-if="page == 'display_gender'">
@@ -107,7 +107,7 @@
       </div>
     </section>
     <section v-if="page == 'home'">
-      <p v-html="$str.msg_onboarding_done.replaceAll(/\n/g, '<br/>')"></p>
+      <p v-html="(me.profile_step < 120 ? $str.msg_onboarding_done : $str.msg_main_short).replaceAll(/\n/g, '<br/>')"></p>
       <div class="buttons">
         <button @click="search(true)">{{ $str.btn_local }}</button>
         <button @click="search(false)">{{ $str.btn_global }}</button>
@@ -117,7 +117,7 @@
       </div>
     </section>
     <section v-if="page == 'search'" class="is-feed">
-      <a-profile v-for="user in feed" :key="user.id" :user="user" @like="like"></a-profile>
+      <a-profile v-for="(user, index) in feed" :is-last="index == feed.length - 1" :key="user.id" :user="user" @like="like"></a-profile>
       <div v-if="!feed.length">{{ $str.err_noresults }}</div>
     </section>
     <section v-if="page == 'profile'">
@@ -143,7 +143,7 @@
       </div>
     </section>
     <section v-if="page == 'matches'" class="is-feed">
-      <a-profile v-for="user in feed" :key="user.id" :user="user" :matches="true"></a-profile>
+      <a-profile v-for="(user, index) in feed" :is-last="index == feed.length - 1" :key="user.id" :user="user" :matches="true"></a-profile>
       <div v-if="!feed.length">{{ $str.err_nomatches }}</div>
     </section>
     <section v-if="page == 'settings'">
@@ -173,10 +173,11 @@
     <input type="file" ref="photo" accept="image/png, image/jpeg" @change="onSelectPhoto" />
   </div>
   <script type="text/x-template" id="profile-template">
-    <div class="profile is-other" :class="{ 'is-dragging': isDragging, 'is-animated': isAnimating }" :style="{
+    <div class="profile is-other" :class="{ 'is-dragging': isDragging, 'is-animated': isAnimating, 'is-last': isLast }" :style="{
       opacity: opacity,
       transform: `translate(${translate[0]}px, ${translate[1]}px) rotate(${rotate}deg)`,
-      marginBottom: -Math.abs(translate[0] * marginMul) + 'px',
+      marginTop: (isLast ? -Math.abs(translate[0] * marginMul) : 0) + 'px',
+      marginBottom: (isLast ? 0 : -Math.abs(translate[0] * marginMul)) + 'px',
       zIndex: isDragging || isAnimating ? 1 : 0,
       '--progress-like': Math.max(0, Math.min(145, translate[0])),
       '--progress-dislike': Math.max(0, Math.min(145, -translate[0]))
@@ -196,7 +197,7 @@
         {{ $str[`gender:${user.gender}:emoji`] }} <b><span class="is-name">{{ user.name || user.first_name }}</span></b><span v-if="user.birthdate">, {{ getAge(user.birthdate) }}</span><span v-if="user.has_partner">, {{ $str.couple }}</span>
       </div>
       <div class="profile__row">
-        <span>{{ $str[`gender:${user.gender}`] }}</span><span v-if="user.pronouns"> ({{ me.pronouns }})</span><span v-if="user.sexuality">, {{ user.sexuality }}</span>
+        <span>{{ $str[`gender:${user.gender}`] }}</span><span v-if="user.pronouns"> ({{ user.pronouns }})</span><span v-if="user.sexuality">, {{ user.sexuality }}</span>
       </div>
       <div class="profile__row" v-if="user.city">
         <span>{{ user.city }}</span><span v-if="user.height">, {{ $str.profile_height.replace(/%height%/g, user.height) }}</span><span v-if="user.weight">, {{ $str.profile_weight.replace(/%weight%/g, user.weight) }}</span>

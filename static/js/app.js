@@ -6,11 +6,26 @@ if (Telegram.WebApp.initDataUnsafe.user) {
   }
 }
 Vue.prototype.$str = Locales[userLang];
+Vue.prototype.getAge = (dob) => {
+  const [day, month, year] = dob.split('.').map(v => parseInt(v, 10));
+  const now = new Date();
+  let age = now.getFullYear() - year;
+  if (now.getMonth() + 1 < month) {
+    return age - 1;
+  }
+  if (now.getMonth() + 1 > month) {
+    return age;
+  }
+  if (now.getDate() < day) {
+    return age - 1;
+  }
+  return age;
+}
 
 const CardTranslateThreshold = 100;
 const MaxCardTranslation = 400;
 Vue.component('a-profile', {
-  props: ['user', 'matches'],
+  props: ['user', 'matches', 'isLast'],
   template: '#profile-template',
   data () {
     return {
@@ -79,8 +94,8 @@ Vue.component('a-profile', {
       this.removeListeners();
       this.performAction(this.translate[0] > CardTranslateThreshold ? 'like' :
         (this.translate[0] < -CardTranslateThreshold ? 'dislike' : 0));
-      ev.preventDefault();
-      ev.stopPropagation();
+      //ev.preventDefault();
+      //ev.stopPropagation();
     },
     performAction(action) {
       this.isAnimating = true;
@@ -121,7 +136,7 @@ const ProfileFields = [
   ['birthdate', 20],
   ['interests', 30],
   ['city', 40],
-  ['display_gender', 50],
+//  ['display_gender', 50],
   ['pronouns', 60],
   ['sexuality', 70],
   ['height', 80],
@@ -356,21 +371,6 @@ var app = new Vue({
           Telegram.WebApp.close();
         }
       });
-    },
-    getAge(dob) {
-      const [day, month, year] = dob.split('.').map(v => parseInt(v, 10));
-      const now = new Date();
-      let age = now.getFullYear() - year;
-      if (now.getMonth() + 1 < month) {
-        return age - 1;
-      }
-      if (now.getMonth() + 1 > month) {
-        return age;
-      }
-      if (now.getDate() < day) {
-        return age - 1;
-      }
-      return age;
     },
   },
   async mounted() {
