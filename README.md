@@ -4,7 +4,7 @@ This is a sample bot for Telegram, made as an entry for [Telegram 2023 Mini App 
 
 This is an incomplete project. In the future, it will replace the current (non-Mini App) UI of already existing dating service [Openly](https://t.me/OpenlyBot).
 
-For now, you can either try out the prototype in [the test environment](https://t.me/OpenlyBot/test), or clone and modify this repository to fit your personal needs (see the [Deployment](#Deployment) section).
+For now, you can either try out the prototype in [the test environment](https://t.me/OpenlyBot/test) (**note**: this version is filled up with mocked profiles instead of actual people), or clone and modify this repository to fit your personal needs (see the [Deployment](#Deployment) section).
 
 ## Usage
 
@@ -60,3 +60,13 @@ pm2 save
 ```
 
 If you're using `Nginx`, don't forget to make sure you've configured it to correctly proxy requests from `<PUBLIC_URL>` to `localhost:<INTERNAL_PORT>`. You also may need to configure [Certbot](https://certbot.eff.org/) to acquire HTTPS certificates (you can follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-20-04) for details).
+
+## Mocking data
+
+It can be useful (for testing purposes) to fill up the database with random fake profiles. To do this, run `mock.js` script:
+
+```
+node mock.js
+```
+
+The newly created profiles with use profiles from `loremflickr.com`, and will have `tg_id` < 0 (so you can easily tell them apart from real profiles).

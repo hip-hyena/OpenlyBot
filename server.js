@@ -63,7 +63,7 @@ function userProfiles(rows) {
   return rows.map(row => {
     const user = {};
     for (let k in row) {
-      if (['id', 'name', 'interests', 'about', 'gender', 'display_gender', 'pronouns', 'sexuality', 'lookingfor', 'city', 'height', 'weight', 'photo_id'].includes(k)) {
+      if (['id', 'name', 'interests', 'about', 'birthdate', 'gender', 'display_gender', 'pronouns', 'sexuality', 'lookingfor', 'city', 'height', 'weight', 'photo_id', 'has_partner'].includes(k)) {
         user[k] = row[k];
       }
     }

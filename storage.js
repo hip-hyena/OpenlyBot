@@ -169,7 +169,7 @@ class BotDb extends Database {
   }
 
   usersByCriteria(exceptIds, offs = 0) {
-    return this.allAsync('SELECT * FROM users WHERE id NOT IN (' + exceptIds.map(id => '?') + ') AND NOT hide_profile AND NOT deactivated LIMIT ?, 40', ...exceptIds, offs);
+    return this.allAsync('SELECT * FROM users WHERE id NOT IN (' + exceptIds.map(id => '?') + ') AND NOT hide_profile AND NOT deactivated ORDER BY last_seen DESC LIMIT ?, 100', ...exceptIds, offs);
   }
 
   likeUser(likerId, likeeId, likeType) {
