@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <script src="js/vue.js"></script>
+  <style> [v-cloak]{ display: none } </style>
+  <link href="css/main.css" rel="stylesheet" media="screen">
+<body>
+  <div id="app">
+    <section v-if="page == 'agreement'">
+      <p v-html="$str.msg_welcome.replaceAll(/\n/g, '<br/>')"></p>
+    </section>
+    <section v-if="page == 'gender'">
+      <p v-html="$str.msg_gender.replaceAll(/\n/g, '<br/>')"></p>
+      <label><input type="checkbox" v-model="isCouple"/> {{ $str.gender_couple }}</label>
+      <div class="buttons">
+        <button v-for="genderId in [1, 2, 3, 4, 5]" @click="selectGender(genderId)">{{ $str['gender:' + genderId] }}</button>
+        <div class="link-button" @click="onboardingPage('lookingfor', 60)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'lookingfor'">
+      <p v-html="$str.msg_lookingfor.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <button v-for="lookingForId in [1, 2, 3, 4, 5, 6]" @click="selectLookingFor(lookingForId)">{{ $str['lookingfor:' + lookingForId] }}</button>
+        <div class="link-button" @click="onboardingPage('photo', 110)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'photo'">
+      <p v-html="$str.msg_photo.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <button @click="$refs.photo.click()">Upload photo...</button>
+        <div class="link-button" @click="onboardingPage('home', 120)">{{ $str.btn_skip }}</div>
+      </div>
+    </section>
+    <section v-if="page == 'home'">
+      <p v-html="$str.msg_onboarding_done.replaceAll(/\n/g, '<br/>')"></p>
+      <div class="buttons">
+        <button @click="search(true)">{{ $str.btn_local }}</button>
+        <button @click="search(false)">{{ $str.btn_global }}</button>
+        <button @click="turnPage('profile')">{{ $str.btn_fillprofile }}</button>
+        <button @click="showMatches()">{{ $str.btn_matches }}</button>
+        <button @click="turnPage('settings')">{{ $str.btn_settings }}</button>
+      </div>
+    </section>
+    <section v-if="page == 'search'" class="is-feed">
+      <a-profile v-for="user in feed" :key="user.id" :user="user" @like="like"></a-profile>
+      <div v-if="!feed.length">{{ $str.err_noresults }}</div>
+    </section>
+    <section v-if="page == 'profile'">
+      <div class="profile is-own">
+        <div class="profile__photos">
+          <div class="profile__photo" :style="{ backgroundImage: `url(${ me.photo_id ? 'files/' + me.id + '/' + me.photo_id + '.2x' : 'empty' }.jpg)` }">
+            <button class="is-outlined" @click="$refs.photo.click()">Update photo...</button>
+          </div>
+        </div>
+        <div class="profile__row">
+          {{ $str[`gender:${me.gender}:emoji`] }} <span class="profile__field is-name" @click="turnPage('name')">{{ me.name || me.first_name }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.birthdate }">{{ me.birthdate ? getAge(me.birthdate) : 'enter birthdate...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.has_partner }">{{ me.has_partner ? 'couple' : 'add partner...' }}</span>
+        </div>
+        <div class="profile__row">
+          <span class="profile__field" @click="turnPage('gender')">{{ $str[`gender:${me.gender}`] }}</span> <span class="profile__field" :class="{ 'is-empty': !me.pronouns }">({{ me.pronouns ? me.pronouns : 'add pronouns...' }})</span>, <span class="profile__field" :class="{ 'is-empty': !me.sexuality }">{{ me.sexuality ? me.sexuality : 'add sexuality...' }}</span>
+        </div>
+        <div class="profile__row">
+          <span class="profile__field" :class="{ 'is-empty': !me.city }">{{ me.city ? me.city : 'Add city...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.height }">{{ me.height ? $str.profile_height.replace(/%height%/g, me.height) : 'add height...' }}</span>, <span class="profile__field" :class="{ 'is-empty': !me.weight }">{{ me.weight ? $str.profile_height.replace(/%weight%/g, me.weight) : 'add weight...' }}</span>
+        </div>
+        <textarea class="profile__row is-about" placeholder="Enter about text..."></textarea>
+        <div class="profile__row">
+          <div class="profile__field" :class="{ 'is-empty': !me.interests }">{{ me.interests ? me.interests : 'Add interests...' }}</div>
+        </div>
+      </div>
+    </section>
+    <section v-if="page == 'matches'" class="is-feed">
+      <a-profile v-for="user in feed" :key="user.id" :user="user" :matches="true"></a-profile>
+      <div v-if="!feed.length">{{ $str.err_nomatches }}</div>
+    </section>
+    <section v-if="page == 'settings'">
+      <div class="buttons">
+        <button @click="turnPage('lookingfor')">{{ $str.btn_filter_genders }}</button>
+        <button @click="toggleHidden()">{{ $str[this.me.hide_profile ? 'btn_hide:1' : 'btn_hide:0'] }}</button>
+        <button @click="turnPage('language')">{{ $str.btn_langs }}</button>
+        <button @click="deleteAccount()">{{ $str.btn_delete_account }}</button>
+      </div>
+    </section>
+    <section v-if="page == 'language'">
+      <div class="buttons">
+        <button @click="setLang('en')">{{ $str['btn_lang:en'] }}</button>
+        <button @click="setLang('ru')">{{ $str['btn_lang:ru'] }}</button>
+      </div>
+    </section>
+
+    <div class="notifications">
+      <div v-for="notif in notifications" class="notification" @click="activateNotification(notif)">
+        <div class="notification__image" :style="{ backgroundImage: `url(${ notif.user.photo_id ? 'files/' + notif.user.id + '/' + notif.user.photo_id + '.2x' : 'empty' }.jpg)` }"></div>
+        <div class="notification__body">
+          <div class="notification__text">{{ $str.msg_new_match }}!</div>
+          <div class="notification__name">{{ notif.user.name || notif.user.first_name }}{{ notif.user.birthdate ? ', ' + getAge(notif.user.birthdate) : '' }}<br/>{{ notif.user.city ? notif.user.city : '' }}</div>
+        </div>
+      </div>
+    </div>
+    <input type="file" ref="photo" accept="image/png, image/jpeg" @change="onSelectPhoto" />
+  </div>
+  <script type="text/x-template" id="profile-template">
+    <div class="profile is-other" :class="{ 'is-dragging': isDragging, 'is-animated': isAnimating }" :style="{
+      opacity: opacity,
+      transform: `translate(${translate[0]}px, ${translate[1]}px) rotate(${rotate}deg)`,
+      marginBottom: -Math.abs(translate[0] * marginMul) + 'px',
+      zIndex: isDragging || isAnimating ? 1 : 0,
+      '--progress-like': Math.max(0, Math.min(145, translate[0])),
+      '--progress-dislike': Math.max(0, Math.min(145, -translate[0]))
+    }" @mousedown="onDown" @touchstart="onDown" @transitionend="onTransitionEnd">
+      <div class="profile__photos">
+        <div class="profile__photo" :style="{ backgroundImage: `url(${ user.photo_id ? 'files/' + user.id + '/' + user.photo_id + '.2x' : 'empty' }.jpg)` }"></div>
+
+        <div class="profile__photo-dots" v-if="false">
+          <div class="profile__photo-dot" style="--progress: 1;"></div>
+          <div class="profile__photo-dot" style="--progress: 0.3;"></div>
+          <div class="profile__photo-dot"></div>
+        </div>
+        <div class="profile__button is-dislike" v-if="!matches" @click="performAction('dislike')"></div>
+        <div class="profile__button is-like" v-if="!matches" @click="performAction('like')"></div>
+      </div>
+      <div class="profile__row">
+        {{ $str[`gender:${user.gender}:emoji`] }} <span class="is-name">{{ user.name || user.first_name }}</span><span v-if="user.birthdate">, {{ getAge(user.birthdate) }}</span><span v-if="user.has_partner">, {{ $str.couple }}</span>
+      </div>
+      <div class="profile__row">
+        <span>{{ $str[`gender:${user.gender}`] }}</span><span v-if="user.pronouns"> ({{ me.pronouns }})</span><span v-if="user.sexuality">, {{ user.sexuality }}</span>
+      </div>
+      <div class="profile__row" v-if="user.city">
+        <span>{{ user.city }}</span><span v-if="user.height">, {{ $str.profile_height.replace(/%height%/g, me.height) }}</span><span v-if="user.weight">, {{ $str.profile_height.replace(/%weight%/g, me.weight) }}</span>
+      </div>
+      <div class="profile__row is-about">{{ user.about }}</div>
+      <div class="profile__row" v-if="user.interests">
+        {{ user.interests }}
+      </div>
+    </div>
+  </script>
+  <script src="js/locales.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
